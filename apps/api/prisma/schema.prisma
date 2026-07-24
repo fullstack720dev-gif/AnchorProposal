@@ -1,0 +1,480 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MASTER
+  ADMIN
+  BIDDER
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum AuthChallengePurpose {
+  SIGNUP
+  LOGIN
+  RESET
+}
+
+enum ApplicationStatus {
+  SAVED
+  READY_TO_APPLY
+  APPLIED
+  RECRUITER_CONTACTED
+  ASSESSMENT
+  INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+  CLOSED
+}
+
+enum GenerationStatus {
+  QUEUED
+  VALIDATING
+  GENERATING
+  RENDERING
+  UPLOADING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum WarningSeverity {
+  INFO
+  CONFIRM
+  ADMIN_REVIEW
+  BLOCK
+}
+
+enum WarningBehavior {
+  WARN
+  CONFIRM
+  ADMIN_REVIEW
+  BLOCK
+}
+
+enum WarningCategory {
+  REMOTE_CONFLICT
+  CLEARANCE
+  TRUST_BACKGROUND
+  CITIZENSHIP
+  TRAVEL_LOCATION
+  DUPLICATE
+}
+
+enum FileType {
+  PDF
+  DOCX
+  TXT
+}
+
+enum GenerationFileKind {
+  RESUME
+  COVER_LETTER
+}
+
+enum WorkArrangement {
+  REMOTE
+  HYBRID
+  ONSITE
+  UNKNOWN
+}
+
+enum ApplicationOptionType {
+  LOCATION
+  SOURCE
+}
+
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  username              String?   @unique
+  passwordHash          String
+  firstName             String
+  lastName              String
+  role                  UserRole  @default(BIDDER)
+  status                UserStatus @default(ACTIVE)
+  lastLogin             DateTime?
+  canCreateApplications Boolean   @default(true)
+  canGenerateResumes    Boolean   @default(true)
+  canDownloadDocuments  Boolean   @default(true)
+  refreshToken          String?
+  managedByAdminId      String?
+  useMasterPrompt       Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  managedByAdmin     User?   @relation("AdminManagedBidders", fields: [managedByAdminId], references: [id])
+  managedBidders     User[]  @relation("AdminManagedBidders")
+  profileAssignments ProfileAssignment[]
+  templateAssignments TemplateAssignment[]
+  applicationOptions ApplicationOption[]
+  applications       Application[]       @relation("BidderApplications")
+  notes              ApplicationNote[]
+  statusHistory      ApplicationStatusHistory[]
+  generations        ResumeGeneration[]
+  auditEvents        AuditEvent[]
+  ownedPrompts       PromptVersion[]     @relation("PromptOwner")
+
+  @@index([managedByAdminId])
+  @@map("users")
+}
+
+model ApplicationOption {
+  id              String                 @id @default(uuid())
+  userId          String
+  type            ApplicationOptionType
+  value           String
+  normalizedValue String
+  isDefault       Boolean                @default(false)
+  sortOrder       Int                    @default(0)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, normalizedValue])
+  @@index([userId, type])
+  @@map("application_options")
+}
+
+model AuthChallenge {
+  id          String               @id @default(uuid())
+  email       String
+  purpose     AuthChallengePurpose
+  codeHash    String?
+  tokenHash   String?
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  attempts    Int                  @default(0)
+  payloadJson Json?
+  createdAt   DateTime             @default(now())
+
+  @@index([email, purpose])
+  @@index([tokenHash])
+  @@map("auth_challenges")
+}
+
+model Profile {
+  id                String    @id @default(uuid())
+  firstName         String
+  lastName          String
+  email             String?
+  phone             String?
+  address           String?
+  city              String?
+  state             String?
+  country           String?
+  profileTitle      String?
+  summary           String?   @db.Text
+  workAuthorization String?
+  remoteOnly        Boolean   @default(true)
+  preferredRoles    String?
+  archivedAt        DateTime?
+  defaultTemplateId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  experiences   ProfileExperience[]
+  education     ProfileEducation[]
+  skills        ProfileSkill[]
+  certifications ProfileCertification[]
+  links         ProfileLink[]
+  assignments   ProfileAssignment[]
+  applications  Application[]
+
+  @@map("profiles")
+}
+
+model ProfileExperience {
+  id               String   @id @default(uuid())
+  profileId        String
+  title            String
+  company          String
+  location         String?
+  workArrangement  WorkArrangement @default(UNKNOWN)
+  startDate        String?
+  endDate          String?
+  responsibilities String?  @db.Text
+  achievements     String?  @db.Text
+  technologies     String?
+  sortOrder        Int      @default(0)
+  profile          Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_experiences")
+}
+
+model ProfileEducation {
+  id          String  @id @default(uuid())
+  profileId   String
+  institution String
+  degree      String
+  major       String?
+  location    String?
+  startDate   String?
+  endDate     String?
+  sortOrder   Int     @default(0)
+  profile     Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_education")
+}
+
+model ProfileSkill {
+  id        String @id @default(uuid())
+  profileId String
+  category  String
+  name      String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_skills")
+}
+
+model ProfileCertification {
+  id            String  @id @default(uuid())
+  profileId     String
+  name          String
+  issuer        String?
+  issueDate     String?
+  expirationDate String?
+  credentialId  String?
+  credentialUrl String?
+  profile       Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_certifications")
+}
+
+model ProfileLink {
+  id        String @id @default(uuid())
+  profileId String
+  type      String
+  url       String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_links")
+}
+
+model ProfileAssignment {
+  id        String   @id @default(uuid())
+  userId    String
+  profileId String
+  isDefault Boolean  @default(false)
+  activeFrom DateTime @default(now())
+  activeTo  DateTime?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, profileId])
+  @@index([userId])
+  @@map("profile_assignments")
+}
+
+model Application {
+  id               String            @id @default(uuid())
+  profileId        String
+  bidderId         String
+  jobTitle         String
+  company          String
+  normalizedCompany String
+  location         String?
+  workArrangement  WorkArrangement   @default(UNKNOWN)
+  source           String?
+  jobUrl           String?
+  jobDescription   String            @db.Text
+  status           ApplicationStatus @default(SAVED)
+  followUpDate     DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  profile        Profile                    @relation(fields: [profileId], references: [id])
+  bidder         User                       @relation("BidderApplications", fields: [bidderId], references: [id])
+  warnings       ApplicationWarning[]
+  notes          ApplicationNote[]
+  statusHistory  ApplicationStatusHistory[]
+  generations    ResumeGeneration[]
+
+  @@index([normalizedCompany, profileId])
+  @@index([status])
+  @@index([bidderId])
+  @@map("applications")
+}
+
+model ApplicationStatusHistory {
+  id            String             @id @default(uuid())
+  applicationId String
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  actorId       String
+  note          String?
+  createdAt     DateTime           @default(now())
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  actor         User               @relation(fields: [actorId], references: [id])
+
+  @@map("application_status_history")
+}
+
+model ApplicationNote {
+  id            String      @id @default(uuid())
+  applicationId String
+  authorId      String
+  content       String      @db.Text
+  createdAt     DateTime    @default(now())
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  author        User        @relation(fields: [authorId], references: [id])
+
+  @@map("application_notes")
+}
+
+model ApplicationWarning {
+  id              String           @id @default(uuid())
+  applicationId   String
+  category        WarningCategory
+  matchedText     String
+  severity        WarningSeverity
+  behavior        WarningBehavior
+  acknowledgedAt  DateTime?
+  overrideReason  String?
+  overriddenById  String?
+  createdAt       DateTime         @default(now())
+  application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("application_warnings")
+}
+
+model PromptVersion {
+  id          String    @id @default(uuid())
+  content     String    @db.Text
+  version     Int       @default(1)
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  ownerId     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  generations ResumeGeneration[]
+  owner       User?     @relation("PromptOwner", fields: [ownerId], references: [id])
+
+  @@index([ownerId])
+  @@map("prompt_versions")
+}
+
+model TemplateVersion {
+  id          String    @id @default(uuid())
+  name        String
+  preset      String?
+  configJson  Json
+  version     Int       @default(1)
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  generations ResumeGeneration[]
+  assignments TemplateAssignment[]
+
+  @@map("template_versions")
+}
+
+model TemplateAssignment {
+  id                String          @id @default(uuid())
+  userId            String
+  templateVersionId String
+  isDefault         Boolean         @default(false)
+  activeFrom        DateTime        @default(now())
+  activeTo          DateTime?
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateVersion   TemplateVersion @relation(fields: [templateVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, templateVersionId])
+  @@index([userId])
+  @@map("template_assignments")
+}
+
+model ResumeGeneration {
+  id                   String           @id @default(uuid())
+  applicationId        String
+  creatorId            String
+  status               GenerationStatus @default(QUEUED)
+  version              Int              @default(1)
+  promptVersionId      String?
+  templateVersionId    String?
+  profileSnapshotJson  Json?
+  structuredOutputJson Json?
+  tokenUsage           Int?
+  costEstimate         Float?
+  errorMessage         String?
+  idempotencyKey       String?          @unique
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  completedAt          DateTime?
+
+  application     Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  creator         User             @relation(fields: [creatorId], references: [id])
+  promptVersion   PromptVersion?   @relation(fields: [promptVersionId], references: [id])
+  templateVersion TemplateVersion? @relation(fields: [templateVersionId], references: [id])
+  files           GenerationFile[]
+
+  @@index([applicationId])
+  @@map("resume_generations")
+}
+
+model GenerationFile {
+  id           String             @id @default(uuid())
+  generationId String
+  type         FileType
+  kind         GenerationFileKind @default(RESUME)
+  filename     String
+  storagePath  String
+  version      Int                @default(1)
+  createdAt    DateTime           @default(now())
+  generation   ResumeGeneration   @relation(fields: [generationId], references: [id], onDelete: Cascade)
+
+  @@map("generation_files")
+}
+
+model WarningRule {
+  id        String           @id @default(uuid())
+  category  WarningCategory
+  pattern   String
+  severity  WarningSeverity
+  behavior  WarningBehavior
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@map("warning_rules")
+}
+
+model AuditEvent {
+  id          String   @id @default(uuid())
+  actorId     String?
+  action      String
+  targetType  String
+  targetId    String?
+  changesJson Json?
+  reason      String?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  actor       User?    @relation(fields: [actorId], references: [id])
+
+  @@index([action])
+  @@index([targetType, targetId])
+  @@map("audit_events")
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}

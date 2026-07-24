@@ -1,0 +1,6 @@
+# Use IPv4 loopback — avoids ERR_NGROK_8012 on Windows when localhost → [::1]
+version: "2"
+tunnels:
+  web:
+    proto: http
+    addr: 127.0.0.1:3000

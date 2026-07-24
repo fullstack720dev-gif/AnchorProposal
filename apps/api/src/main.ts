@@ -1,0 +1,24 @@
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
+
+function resolveCorsOrigins(): string[] | boolean {
+  const configured = (process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
+  const defaults = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  const origins = [...new Set([...defaults, ...configured])];
+  return origins.length > 0 ? origins : true;
+}
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.enableCors({ origin: resolveCorsOrigins(), credentials: true });
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  const port = process.env.API_PORT || 3001;
+  await app.listen(port);
+  console.log(`API running on http://127.0.0.1:${port}`);
+}
+bootstrap();

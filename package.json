@@ -1,0 +1,24 @@
+{
+  "name": "anchorproposal",
+  "private": true,
+  "scripts": {
+    "dev:web": "pnpm --filter @anchorproposal/web dev",
+    "dev:api": "pnpm --filter @anchorproposal/api dev",
+    "dev": "pnpm --parallel --filter @anchorproposal/web --filter @anchorproposal/api run dev",
+    "share": "powershell -ExecutionPolicy Bypass -File ./scripts/start-share.ps1",
+    "build": "pnpm --filter @anchorproposal/shared build && pnpm --filter @anchorproposal/api build && pnpm --filter @anchorproposal/web build",
+    "build:api": "pnpm --filter @anchorproposal/shared build && pnpm --filter @anchorproposal/api build",
+    "build:web": "pnpm --filter @anchorproposal/web build",
+    "start:api": "pnpm --filter @anchorproposal/api start",
+    "start:web": "pnpm --filter @anchorproposal/web start",
+    "start": "pnpm --parallel --filter @anchorproposal/web --filter @anchorproposal/api run start",
+    "lint": "pnpm --filter @anchorproposal/web lint",
+    "db:migrate": "pnpm --filter @anchorproposal/api db:migrate",
+    "db:seed": "pnpm --filter @anchorproposal/api db:seed",
+    "db:generate": "pnpm --filter @anchorproposal/api db:generate",
+    "test": "pnpm --filter @anchorproposal/shared build && npx ts-node scripts/test-unit.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

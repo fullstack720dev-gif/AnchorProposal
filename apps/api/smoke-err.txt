@@ -1,0 +1,17 @@
+Error: Redis version needs to be greater or equal than 5.0.0 Current: 3.0.504
+    at RedisConnection.init (D:\tailor\node_modules\.pnpm\bullmq@5.80.2\node_modules\bullmq\dist\cjs\classes\redis-connection.js:203:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Error: Redis version needs to be greater or equal than 5.0.0 Current: 3.0.504
+    at RedisConnection.init (D:\tailor\node_modules\.pnpm\bullmq@5.80.2\node_modules\bullmq\dist\cjs\classes\redis-connection.js:203:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Error: Redis version needs to be greater or equal than 5.0.0 Current: 3.0.504
+    at RedisConnection.init (D:\tailor\node_modules\.pnpm\bullmq@5.80.2\node_modules\bullmq\dist\cjs\classes\redis-connection.js:203:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Error: Redis version needs to be greater or equal than 5.0.0 Current: 3.0.504
+    at RedisConnection.init (D:\tailor\node_modules\.pnpm\bullmq@5.80.2\node_modules\bullmq\dist\cjs\classes\redis-connection.js:203:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Error: Redis version needs to be greater or equal than 5.0.0 Current: 3.0.504
+    at RedisConnection.init (D:\tailor\node_modules\.pnpm\bullmq@5.80.2\node_modules\bullmq\dist\cjs\classes\redis-connection.js:203:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[Nest] 4400  - 07/14/2026, 3:15:17 PM   ERROR [AllExceptionsFilter] UnauthorizedException: Invalid credentials
+[Nest] 4400  - 07/14/2026, 3:15:19 PM   ERROR [AllExceptionsFilter] ForbiddenException: Account is pending approval. Contact an administrator.

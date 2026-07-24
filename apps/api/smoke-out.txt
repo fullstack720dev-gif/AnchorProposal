@@ -1,0 +1,106 @@
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] PrismaModule dependencies initialized +91ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] PassportModule dependencies initialized +2ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] ConfigHostModule dependencies initialized +33ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] DiscoveryModule dependencies initialized +2ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] ConfigModule dependencies initialized +4ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] ConfigModule dependencies initialized +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] BullModule dependencies initialized +4ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] BullModule dependencies initialized +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] MailModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] JobPoolModule dependencies initialized +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] AppModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] JwtModule dependencies initialized +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] UsersModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] ProfilesModule dependencies initialized +2ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] RulesModule dependencies initialized +2ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] TemplatesModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] SettingsModule dependencies initialized +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] DashboardModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] AuditModule dependencies initialized +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] ApplicationsModule dependencies initialized +7ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] BullModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] DocumentsModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] AuthModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [InstanceLoader] GenerationsModule dependencies initialized +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] AuthController {/auth}: +141ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/login, POST} route +3ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/login/verify, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/register/request-otp, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/register/verify, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/forgot-password, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/reset-password, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/refresh, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/logout, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/auth/me, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] UsersController {/users}: +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/users, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/users, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/users/:id/status, PATCH} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/users/:id/permissions, PATCH} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/users/:id/assignments, PATCH} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] ProfilesController {/profiles}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles, GET} route +2ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles/assigned, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles/default, GET} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles/:id, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles/:id, PUT} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles/:id/archive, PATCH} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/profiles/:id/clone, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] ApplicationsController {/applications}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications/:id, GET} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications/:id/status, PATCH} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications/:id/notes, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications/warnings/:warningId/acknowledge, PATCH} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] RulesController {/settings/warning-rules}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/warning-rules, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/warning-rules, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/warning-rules/:id, PATCH} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] TemplatesController {/templates}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/templates, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/templates/:id, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/templates/:id/preview, GET} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/templates, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/templates/:id, PUT} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/templates/:id/publish, PATCH} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/templates/:id/clone, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] SettingsController {/settings}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/prompts, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/prompts, POST} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/prompts/:id/publish, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/ai, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/settings/ai, PATCH} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] GenerationsController {/}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications/:id/generations, POST} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/applications/:id/generations, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/generations/:id, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] DocumentsController {/documents}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/documents/:fileId/download, GET} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] DashboardController {/dashboard}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/dashboard/metrics, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] AuditController {/audit}: +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/audit, GET} route +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RoutesResolver] JobPoolController {/job-pool}: +0ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [RouterExplorer] Mapped {/job-pool, GET} route +1ms
+[Nest] 4400  - 07/14/2026, 3:15:16 PM     LOG [NestApplication] Nest application successfully started +89ms
+API running on http://localhost:3001
+[Nest] 4400  - 07/14/2026, 3:15:18 PM     LOG [MailService] [DEV MAIL] To: master@anchorproposal.com | Subject: AnchorProposal Sign-in verification code
+Your AnchorProposal sign-in verification code is: 350861
+
+This code expires in 10 minutes.
+If you did not request this, ignore this email.
+[Nest] 4400  - 07/14/2026, 3:15:18 PM     LOG [MailService] [DEV MAIL] To: pending562782955@example.com | Subject: AnchorProposal Sign-up verification code
+Your AnchorProposal sign-up verification code is: 543619
+
+This code expires in 10 minutes.
+If you did not request this, ignore this email.
+[Nest] 4400  - 07/14/2026, 3:15:19 PM     LOG [MailService] [DEV MAIL] To: bidder@anchorproposal.com | Subject: AnchorProposal password reset
+Reset your AnchorProposal password using this link:
+
+http://localhost:3000/reset-password?token=eba994531ba819778954563334f7f357ea276d7a12cdba29276fb1494e6fab5e
+
+This link expires in 1 hour and can be used once.
+If you did not request a reset, ignore this email.

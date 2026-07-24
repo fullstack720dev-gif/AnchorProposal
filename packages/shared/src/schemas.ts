@@ -1,0 +1,311 @@
+import { z } from 'zod';
+
+/** Skill row: { "Frontend Development": "React, TypeScript, ..." } */
+export const promptSkillRowSchema = z.record(z.string());
+
+export const promptContactSchema = z.object({
+  name: z.string(),
+  /** Professional headline shown under the name (e.g. target or current role). */
+  title: z.string().optional(),
+  address: z.string().optional(),
+  email: z.string().optional(),
+  phone: z.string().optional(),
+  linkedin: z.string().optional(),
+});
+
+/** Flexible experience row matching prompt / profile field names. */
+export const promptExperienceSchema = z
+  .object({
+    title: z.string().nullish(),
+    jobTitle: z.string().nullish(),
+    company: z.string().nullish(),
+    companyName: z.string().nullish(),
+    location: z.string().nullish(),
+    companyLocation: z.string().nullish(),
+    dates: z.string().nullish(),
+    startDate: z.string().nullish(),
+    endDate: z.string().nullish(),
+    enterDate: z.string().nullish(),
+    bullets: z.array(z.string()).nullish(),
+    responsibilities: z.union([z.string(), z.array(z.string())]).nullish(),
+    achievements: z.union([z.string(), z.array(z.string())]).nullish(),
+    technologies: z.string().nullish(),
+    jobType: z.string().nullish(),
+  })
+  .passthrough();
+
+export const promptEducationSchema = z
+  .object({
+    institution: z.string().nullish(),
+    school: z.string().nullish(),
+    university: z.string().nullish(),
+    degree: z.string().nullish(),
+    major: z.string().nullish(),
+    dates: z.string().nullish(),
+    startDate: z.string().nullish(),
+    endDate: z.string().nullish(),
+    location: z.string().nullish(),
+  })
+  .passthrough();
+
+export const promptCertificateSchema = z
+  .object({
+    name: z.string().nullish(),
+    title: z.string().nullish(),
+    issuer: z.string().nullish(),
+    organization: z.string().nullish(),
+    date: z.string().nullish(),
+    dates: z.string().nullish(),
+    issueDate: z.string().nullish(),
+  })
+  .passthrough();
+
+/**
+ * Canonical resume JSON used by prompts and document rendering.
+ * Matches Admin prompt OUTPUT FORMAT (contact / skills / experiences / …).
+ */
+export const promptResumeSchema = z.object({
+  contact: promptContactSchema,
+  summary: z.string(),
+  skills: z.array(promptSkillRowSchema).default([]),
+  // Accept any object rows — AI/profile payloads vary; renderer reads known fields.
+  experiences: z.array(z.record(z.any())).default([]),
+  educations: z.array(z.record(z.any())).default([]),
+  certificates: z.array(z.record(z.any())).default([]),
+});
+
+export type PromptResumeContent = z.infer<typeof promptResumeSchema>;
+
+/** @deprecated Use PromptResumeContent */
+export type ResumeContent = PromptResumeContent;
+
+export const coverLetterSchema = z.object({
+  greeting: z.string(),
+  paragraphs: z.array(z.string()).min(1),
+  closing: z.string(),
+  signatureName: z.string().optional(),
+});
+
+export type CoverLetterContent = z.infer<typeof coverLetterSchema>;
+
+export const generationOutputSchema = z.object({
+  contact: promptContactSchema,
+  summary: z.string(),
+  skills: z.array(promptSkillRowSchema).default([]),
+  experiences: z.array(z.record(z.any())).default([]),
+  educations: z.array(z.record(z.any())).default([]),
+  certificates: z.array(z.record(z.any())).default([]),
+  coverLetter: coverLetterSchema.optional(),
+});
+
+export type GenerationOutput = z.infer<typeof generationOutputSchema>;
+
+const OBJECT_TEXT_KEYS = [
+  'text',
+  'description',
+  'content',
+  'name',
+  'title',
+  'value',
+  'bullet',
+  'responsibility',
+  'achievement',
+  'degree',
+  'major',
+  'label',
+] as const;
+
+/** Coerce AI/profile nested values to display text; never returns "[object Object]". */
+export function plainText(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'string') {
+    const t = value.trim();
+    return t === '[object Object]' ? '' : t;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    return value.map(plainText).filter(Boolean).join(', ');
+  }
+  if (typeof value === 'object') {
+    const rec = value as Record<string, unknown>;
+    for (const key of OBJECT_TEXT_KEYS) {
+      const got = plainText(rec[key]);
+      if (got) return got;
+    }
+    for (const v of Object.values(rec)) {
+      const got = plainText(v);
+      if (got) return got;
+    }
+  }
+  return '';
+}
+
+/** Always returns a string list (unwraps nested bullet objects / newline strings). */
+export function plainTextList(value: unknown): string[] {
+  if (value == null || value === '') return [];
+  if (typeof value === 'string') {
+    const t = value.trim();
+    if (!t || t === '[object Object]') return [];
+    return t
+      .split(/\n+/)
+      .map((s) => s.replace(/^[-•*]\s*/, '').trim())
+      .filter((s) => s && s !== '[object Object]');
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => plainTextList(item)).filter(Boolean);
+  }
+  const single = plainText(value);
+  return single ? [single] : [];
+}
+
+function firstPlain(
+  rec: Record<string, unknown>,
+  keys: string[],
+): string {
+  for (const key of keys) {
+    const got = plainText(rec[key]);
+    if (got) return got;
+  }
+  return '';
+}
+
+export function experienceBullets(
+  exp: Record<string, unknown> | z.infer<typeof promptExperienceSchema>,
+): string[] {
+  const e = exp as Record<string, unknown>;
+  for (const key of ['bullets', 'responsibilities', 'achievements', 'highlights', 'duties', 'description', 'details']) {
+    const list = plainTextList(e[key]);
+    if (list.length) return list;
+  }
+  return [];
+}
+
+export function experienceDates(
+  exp: Record<string, unknown> | z.infer<typeof promptExperienceSchema>,
+): string {
+  const e = exp as Record<string, unknown>;
+  const dates = plainText(e.dates);
+  if (dates) return dates;
+  const start = plainText(e.enterDate || e.startDate);
+  const end = plainText(e.endDate) || (start ? 'Present' : '');
+  if (start || plainText(e.endDate)) return `${start} – ${end}`.replace(/^\s–\s/, '').trim();
+  return '';
+}
+
+export function experienceTitle(
+  exp: Record<string, unknown> | z.infer<typeof promptExperienceSchema>,
+): string {
+  const e = exp as Record<string, unknown>;
+  return firstPlain(e, ['title', 'jobTitle', 'position', 'role']) || 'Role';
+}
+
+export function experienceCompany(
+  exp: Record<string, unknown> | z.infer<typeof promptExperienceSchema>,
+): string {
+  const e = exp as Record<string, unknown>;
+  return firstPlain(e, ['company', 'companyName', 'employer', 'organization', 'org']) || 'Company';
+}
+
+export function formatEducationLine(
+  edu: Record<string, unknown> | z.infer<typeof promptEducationSchema>,
+): string {
+  const e = edu as Record<string, unknown>;
+  const degree = firstPlain(e, ['degree', 'major', 'name', 'title']);
+  const institution = firstPlain(e, ['institution', 'school', 'university']);
+  const dates =
+    plainText(e.dates) ||
+    [plainText(e.startDate), plainText(e.endDate)].filter(Boolean).join(' – ');
+  return `${degree}${institution ? ` — ${institution}` : ''}${dates ? ` (${dates})` : ''}`.trim();
+}
+
+export function formatCertificateLine(
+  cert: Record<string, unknown> | z.infer<typeof promptCertificateSchema>,
+): string {
+  const c = cert as Record<string, unknown>;
+  const name = firstPlain(c, ['name', 'title']);
+  const issuer = firstPlain(c, ['issuer', 'organization', 'org']);
+  const date = firstPlain(c, ['date', 'dates', 'issueDate']);
+  return `${name}${issuer ? ` — ${issuer}` : ''}${date ? ` (${date})` : ''}`.trim();
+}
+
+export function skillRows(
+  skills: z.infer<typeof promptSkillRowSchema>[],
+): { category: string; items: string }[] {
+  return skills.flatMap((row) =>
+    Object.entries(row).map(([category, items]) => ({
+      category: plainText(category) || category,
+      items: plainText(items),
+    })),
+  );
+}
+
+export const templateConfigSchema = z.object({
+  typography: z
+    .object({
+      bodyFont: z.string().default('Inter'),
+      headingFont: z.string().default('Inter'),
+      baseFontSize: z.number().default(11),
+      headingScale: z.number().default(1.2),
+      lineHeight: z.number().default(1.4),
+      letterSpacing: z.number().default(0),
+      nameUppercase: z.boolean().default(false),
+      headingUppercase: z.boolean().default(true),
+    })
+    .default({}),
+  layout: z
+    .object({
+      pageSize: z.enum(['A4', 'LETTER']).default('LETTER'),
+      marginTop: z.number().default(36),
+      marginBottom: z.number().default(36),
+      marginLeft: z.number().default(48),
+      marginRight: z.number().default(48),
+      sectionSpacing: z.number().default(16),
+      headerAlignment: z.enum(['left', 'center']).default('left'),
+    })
+    .default({}),
+  colors: z
+    .object({
+      primary: z.string().default('#1e3a5f'),
+      heading: z.string().default('#1e293b'),
+      body: z.string().default('#334155'),
+      accent: z.string().default('#3b82f6'),
+      divider: z.string().default('#e2e8f0'),
+      sectionLabelBg: z.string().default('#e8eef5'),
+      sectionLabelText: z.string().default('#1e293b'),
+    })
+    .default({}),
+  styles: z
+    .object({
+      sectionHeadingStyle: z
+        .enum(['underline', 'background', 'bar', 'plain'])
+        .default('underline'),
+      listStyle: z.enum(['disc', 'circle', 'square', 'dash', 'none']).default('disc'),
+      skillsLayout: z.enum(['comma', 'bullets', 'lines']).default('comma'),
+      showDividers: z.boolean().default(true),
+      experienceTitleWeight: z.enum(['normal', 'bold']).default('bold'),
+    })
+    .default({}),
+  sections: z
+    .object({
+      order: z
+        .array(z.string())
+        .default(['summary', 'skills', 'experience', 'education', 'certifications']),
+      visibility: z.record(z.string(), z.boolean()).default({
+        summary: true,
+        skills: true,
+        experience: true,
+        education: true,
+        certifications: true,
+      }),
+    })
+    .default({}),
+  meta: z
+    .object({
+      description: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+    })
+    .optional()
+    .default({}),
+});
+
+export type TemplateConfig = z.infer<typeof templateConfigSchema>;

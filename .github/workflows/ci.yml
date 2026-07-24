@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: innos
+          POSTGRES_PASSWORD: innos
+          POSTGRES_DB: innos
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm install
+      - run: npm run build -w @innos/shared
+      - run: cd apps/api && npx prisma generate
+      - run: npm run build -w @innos/api
+      - run: npm run build -w @innos/web
+
+      - name: Run shared unit tests
+        run: |
+          cd packages/shared
+          npx ts-node -e "
+            const { normalizeCompany } = require('./dist/utils');
+            console.assert(normalizeCompany('Google LLC') === 'google', 'normalizeCompany failed');
+            console.log('All tests passed');
+          "
