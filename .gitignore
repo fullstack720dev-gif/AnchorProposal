@@ -4,6 +4,6 @@ dist
 .turbo
 .env
 .env.local
-storage
+/storage/
 *.log
 .DS_Store
