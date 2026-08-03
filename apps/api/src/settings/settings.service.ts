@@ -251,7 +251,7 @@ export class SettingsService {
     const model = await this.prisma.systemSetting.findUnique({ where: { key: 'deepseek_model' } });
     return {
       hasApiKey: !!key?.value,
-      model: model?.value || 'deepseek-chat',
+      model: model?.value || 'deepseek-v4-flash',
     };
   }
 
@@ -280,6 +280,6 @@ export class SettingsService {
 
   async getModel(): Promise<string> {
     const setting = await this.prisma.systemSetting.findUnique({ where: { key: 'deepseek_model' } });
-    return setting?.value || 'deepseek-chat';
+    return setting?.value || 'deepseek-v4-flash';
   }
 }
