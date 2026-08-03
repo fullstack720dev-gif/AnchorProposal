@@ -2,8 +2,11 @@ node_modules
 dist
 .next
 .turbo
-.env
-.env.local
-/storage/
 *.log
 .DS_Store
+
+# Generated resumes / cover letters (local disk storage)
+storage/
+# Accidental folder name with trailing space (Windows)
+storage\ /
+config.bat
