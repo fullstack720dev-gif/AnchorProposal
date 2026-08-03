@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   generationOutputSchema,
   plainText,
@@ -15,8 +15,21 @@ type GenMeta = {
   profileExperiences?: Record<string, unknown>[];
 };
 
+const RESUME_JSON_EXAMPLE = [
+  '{',
+  '  "contact":{"name":"Jane Doe","title":"Software Engineer","email":"jane@example.com"},',
+  '  "summary":"...",',
+  '  "skills":[{"Languages":"TypeScript, Python"}],',
+  '  "experiences":[{"title":"Engineer","company":"Acme","dates":"2020 – Present","bullets":["Shipped X","Improved Y"]}],',
+  '  "educations":[{"degree":"B.S. CS","institution":"State U","dates":"2016 – 2020"}],',
+  '  "certificates":[{"name":"AWS SAA","issuer":"Amazon","date":"2023"}]',
+  '}',
+].join(' ');
+
 @Injectable()
 export class DeepseekService {
+  private readonly logger = new Logger(DeepseekService.name);
+
   constructor(private settings: SettingsService) {}
 
   async generate(
@@ -39,11 +52,14 @@ export class DeepseekService {
         {
           role: 'system',
           content: [
-            'You are a professional resume writer. Respond with valid JSON only using keys contact, summary, skills, experiences, educations, certificates.',
+            'You are a professional resume writer. Reply with valid json only (no markdown fences).',
+            'Use this json shape:',
+            RESUME_JSON_EXAMPLE,
+            'Required keys: contact, summary, skills, experiences, educations, certificates.',
             'contact.title is the professional headline under the name: ground it in the candidate\'s real profile title / current role.',
             'You may lightly reflect the job domain from the JD, but NEVER copy, paraphrase, or lightly rename the target job title into contact.title (that looks fake to recruiters).',
             'CRITICAL: every item in experiences MUST include "bullets": an array of 4-8 plain strings (achievements/responsibilities). Never omit bullets. Never use nested objects for bullets.',
-            'Education/certificate fields must be plain strings. No markdown fences.',
+            'Education/certificate fields must be plain strings.',
           ].join(' '),
         },
         { role: 'user', content: prompt },
@@ -95,48 +111,67 @@ export class DeepseekService {
     model: string,
     messages: { role: string; content: string }[],
   ): Promise<{ parsed: unknown; tokenUsage: number }> {
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
+    const maxAttempts = 3;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const body: Record<string, unknown> = {
         model,
         messages,
         response_format: { type: 'json_object' },
-        temperature: 0.3,
+        temperature: attempt === 1 ? 0.3 : 0.2,
         max_tokens: 8192,
-      }),
-    });
+        // Thinking + JSON mode often yields empty content on Flash; disable for all resume JSON.
+        thinking: { type: 'disabled' },
+      };
 
-    if (!response.ok) {
-      const err = await response.text();
-      if (response.status === 402) {
-        throw new Error(
-          'DeepSeek account has insufficient balance. Top up at https://platform.deepseek.com or update the API key in Settings → AI Provider.',
-        );
+      const response = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        if (response.status === 402) {
+          throw new Error(
+            'DeepSeek account has insufficient balance. Top up at https://platform.deepseek.com or update the API key in Settings → AI Provider.',
+          );
+        }
+        throw new Error(`DeepSeek API error: ${response.status} ${err}`);
       }
-      throw new Error(`DeepSeek API error: ${response.status} ${err}`);
+
+      const data = (await response.json()) as {
+        choices: { message: { content?: string | null }; finish_reason?: string }[];
+        usage?: { total_tokens: number };
+      };
+      const raw = data.choices[0]?.message?.content?.trim();
+      if (!raw) {
+        this.logger.warn(
+          `Empty DeepSeek content (model=${model}, attempt=${attempt}/${maxAttempts}, finish_reason=${data.choices[0]?.finish_reason ?? 'n/a'})`,
+        );
+        if (attempt < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 400 * attempt));
+          continue;
+        }
+        break;
+      }
+
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('Invalid JSON from DeepSeek');
+        parsed = JSON.parse(jsonMatch[0]);
+      }
+
+      return { parsed, tokenUsage: data.usage?.total_tokens || 0 };
     }
 
-    const data = (await response.json()) as {
-      choices: { message: { content: string } }[];
-      usage?: { total_tokens: number };
-    };
-    const raw = data.choices[0]?.message?.content;
-    if (!raw) throw new Error('Empty response from DeepSeek');
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('Invalid JSON from DeepSeek');
-      parsed = JSON.parse(jsonMatch[0]);
-    }
-
-    return { parsed, tokenUsage: data.usage?.total_tokens || 0 };
+    throw new Error('Empty response from DeepSeek');
   }
 
   private experiencesMissingBullets(content: GenerationOutput): boolean {
@@ -198,8 +233,11 @@ export class DeepseekService {
     const { parsed, tokenUsage } = await this.chatJson(apiKey, model, [
       {
         role: 'system',
-        content:
-          'You fill missing resume experience bullets. Return JSON only with key "experiences". Each item needs title, company, dates, optional location, and bullets: 4-8 plain strings. No nested objects. No markdown.',
+        content: [
+          'You fill missing resume experience bullets. Reply with valid json only (no markdown).',
+          'Example json shape: {"experiences":[{"title":"Engineer","company":"Acme","dates":"2020 – Present","bullets":["Shipped X","Improved Y"]}]}',
+          'Each item needs title, company, dates, optional location, and bullets: 4-8 plain strings. No nested objects.',
+        ].join(' '),
       },
       {
         role: 'user',
