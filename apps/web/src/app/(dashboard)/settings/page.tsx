@@ -30,7 +30,7 @@ export default function SettingsPage() {
   const [warnings, setWarnings] = useState<Record<string, unknown>[]>([]);
   const [audit, setAudit] = useState<Record<string, unknown>[]>([]);
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('deepseek-chat');
+  const [model, setModel] = useState('deepseek-v4-flash');
   const [savingAi, setSavingAi] = useState(false);
   const [savingPrompt, setSavingPrompt] = useState(false);
 
@@ -70,7 +70,7 @@ export default function SettingsPage() {
     setEditingPromptId(null);
     if (ai) {
       setAiSettings(ai);
-      setModel(ai.model || 'deepseek-chat');
+      setModel(ai.model || 'deepseek-v4-flash');
     }
     setWarnings(w as Record<string, unknown>[]);
     setAudit(a as Record<string, unknown>[]);
@@ -459,7 +459,7 @@ export default function SettingsPage() {
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg text-sm"
-                placeholder="deepseek-chat"
+                placeholder="deepseek-v4-flash"
               />
             </div>
             <div>
